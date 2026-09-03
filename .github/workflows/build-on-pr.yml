@@ -37,4 +37,3 @@ jobs:
     uses: qualcomm-linux/qcom-rpm-utils/.github/workflows/pkg-build-reusable-workflow.yml@main
     with:
       qcom-rpm-utils-ref: main
-      cache-base-url: ${{ vars.SRC_TARBALL_CACHE_BASE_URL }}
