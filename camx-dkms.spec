@@ -12,13 +12,16 @@
 
 Name:           camx-dkms
 Version:        1.0.5
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Qualcomm CamX camera kernel driver (DKMS source)
 
 License:        GPL-2.0-only
 URL:            https://github.com/qualcomm-linux/camera-driver
 
 Source0:        %{url}/archive/refs/tags/v%{version}.tar.gz#/%{upstream_name}-%{version}.tar.gz
+Source1:        camx-dkms.build
+Source2:        camx-dkms.clean
+Source3:        camx-dkms.dkms
 
 ExclusiveArch:  aarch64
 
@@ -100,77 +103,10 @@ tar -cf - --exclude='./.*' \
           --exclude=./make-source-tarball.sh --exclude=./rpm \
     . | tar -xf - -C %{buildroot}%{dkms_src}
 
-cat > %{buildroot}%{dkms_src}/dkms-build <<'EOF'
-#!/bin/bash
-set -uo pipefail
+install -Dm0755 %{SOURCE1} %{buildroot}%{dkms_src}/dkms-build
+install -Dm0755 %{SOURCE2} %{buildroot}%{dkms_src}/dkms-clean
 
-KERNEL_VER="${1}"
-BUILD_DIR="$(pwd)"
-KERNEL_BUILD="/lib/modules/${KERNEL_VER}/build"
-
-if [ ! -d "${KERNEL_BUILD}" ]; then
-    echo "ERROR: no kernel build tree at ${KERNEL_BUILD}" >&2
-    exit 1
-fi
-
-{
-    echo "#define CAMERA_COMPILE_TIME \"$(date)\""
-    echo "#define CAMERA_COMPILE_HOST \"$(hostname)\""
-    echo "#define CAMERA_CC_VERSION \"$(${CC:-gcc} --version | head -1)\""
-} > "${BUILD_DIR}/cam_generated_h"
-
-SUPPORTED_ARCH="$(sed -n 's/^[[:space:]]*SUPPORTED_ARCH[[:space:]]*=[[:space:]]*//p' \
-                  "${BUILD_DIR}/Makefile" | head -1)"
-if [ -z "${SUPPORTED_ARCH}" ]; then
-    echo "ERROR: could not read SUPPORTED_ARCH from ${BUILD_DIR}/Makefile" >&2
-    exit 1
-fi
-
-BUILD_FAILED=0
-for ARCH in ${SUPPORTED_ARCH}; do
-    echo "=== building camera_${ARCH}.ko for ${KERNEL_VER} ==="
-    if make -j"$(nproc)" -C "${KERNEL_BUILD}" \
-            M="${BUILD_DIR}" \
-            CAMERA_KERNEL_ROOT="${BUILD_DIR}" \
-            CAMERA_ARCH="${ARCH}" \
-            INSTALL_MOD_DIR=camera \
-            KCFLAGS=-Wno-error=attributes \
-            modules; then
-        echo "camera_${ARCH}.ko built OK"
-    else
-        echo "ERROR: build failed for CAMERA_ARCH=${ARCH}" >&2
-        BUILD_FAILED=1
-    fi
-done
-
-[ "${BUILD_FAILED}" -eq 0 ] || exit 1
-EOF
-
-cat > %{buildroot}%{dkms_src}/dkms-clean <<'EOF'
-#!/bin/bash
-set -uo pipefail
-
-KERNEL_VER="${1}"
-BUILD_DIR="$(pwd)"
-KERNEL_BUILD="/lib/modules/${KERNEL_VER}/build"
-
-make -C "${KERNEL_BUILD}" M="${BUILD_DIR}" clean 2>/dev/null || true
-rm -f "${BUILD_DIR}/cam_generated_h"
-EOF
-
-chmod 0755 %{buildroot}%{dkms_src}/dkms-build %{buildroot}%{dkms_src}/dkms-clean
-
-cat > %{buildroot}%{dkms_src}/dkms.conf <<'EOF'
-PACKAGE_NAME="camx"
-PACKAGE_VERSION="%{version}"
-
-MAKE="./dkms-build ${kernelver} ${dkms_tree} ${PACKAGE_NAME} ${PACKAGE_VERSION}"
-CLEAN="./dkms-clean ${kernelver} ${dkms_tree} ${PACKAGE_NAME} ${PACKAGE_VERSION}"
-AUTOINSTALL="yes"
-
-BUILD_EXCLUSIVE_CONFIG="CONFIG_ARCH_QCOM"
-BUILD_EXCLUSIVE_KERNEL_MIN="6.16"
-EOF
+sed 's/#MODULE_VERSION#/%{version}/' %{SOURCE3} > %{buildroot}%{dkms_src}/dkms.conf
 
 {
     echo ""
@@ -208,7 +144,6 @@ if [ "${found_hdrs}" -eq 0 ]; then
 fi
 
 %post
-# Register DKMS and build modules for every kernel with available headers.
 dkms add -m %{mod_name} -v %{version} --rpm_safe_upgrade >/dev/null 2>&1 || :
 
 built=0
@@ -250,5 +185,9 @@ exit 0
 %{_includedir}/camx/
 
 %changelog
+* Wed Sep 23 2026 Gangabhavani Yenugula <gyenugul@qti.qualcomm.com> - 1.0.5-2
+- Extract the inline dkms-build/dkms-clean/dkms.conf heredocs into standalone
+  camx-dkms.build, camx-dkms.clean and camx-dkms.dkms Source file
+
 * Wed Aug 26 2026 Kripalsinh Rana <kripalsi@qti.qualcomm.com> - 1.0.5-1
 - Initial RPM packaging of camera-driver 1.0.5 as DKMS source.

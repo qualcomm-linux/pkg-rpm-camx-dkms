@@ -1,0 +1,12 @@
+#!/bin/bash
+# DKMS clean script for camx camera driver.
+# DKMS sets cwd to $dkms_tree/$module/$version/build/ before invoking CLEAN.
+set -euo pipefail
+
+KERNEL_VER="${1}"
+BUILD_DIR="$(pwd)"
+# $5 is dkms's ${kernel_source_dir}; see camx-dkms.build for the details.
+KERNEL_BUILD="${5:-/lib/modules/${KERNEL_VER}/build}"
+
+make -C "${KERNEL_BUILD}" M="${BUILD_DIR}" clean 2>/dev/null || true
+rm -f "${BUILD_DIR}/cam_generated_h"
