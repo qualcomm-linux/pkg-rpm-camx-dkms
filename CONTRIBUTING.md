@@ -11,10 +11,10 @@ Development happens directly on branch main. Open a PR targeting main
 ## Submitting a pull request
 
 1. Please read our [code of conduct](CODE-OF-CONDUCT.md) and [license](LICENSE.txt).
-1. [Fork](https://github.com/qualcomm-linux/pkg-template/fork) and clone the repository.
+1. [Fork](https://github.com/qualcomm-linux/pkg-rpm-camx-dkms/fork) and clone the repository.
 
     ```bash
-    git clone https://github.com/qualcomm-linux/pkg-template.git
+    git clone https://github.com/qualcomm-linux/pkg-rpm-camx-dkms.git
     ```
 
 1. Create a new branch based on `main`:
@@ -68,7 +68,7 @@ By submitting a PR, you agree to participate in this process and help us keep th
 
 Here are a few things you can do that will increase the likelihood of your pull request to be accepted:
 
-- Follow the existing style where possible. **INSERT LINK TO STYLE, e.g. PEP8 for python**
+- Follow the existing style where possible.
 - Write tests.
 - Keep your change as focused as possible.
   If you want to make multiple independent changes, please consider submitting them as separate pull requests.
