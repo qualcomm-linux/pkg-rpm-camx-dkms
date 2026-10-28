@@ -1,0 +1,11 @@
+PACKAGE_NAME="camx"
+PACKAGE_VERSION="#MODULE_VERSION#"
+
+# dkms only injects -j${parallel_jobs} into MAKE lines starting with "make";
+# so pass parallel_jobs to dkms-build explicitly
+MAKE="PARALLEL_JOBS='${parallel_jobs}' ./dkms-build ${kernelver} ${dkms_tree} ${PACKAGE_NAME} ${PACKAGE_VERSION} ${kernel_source_dir}"
+CLEAN="./dkms-clean ${kernelver} ${dkms_tree} ${PACKAGE_NAME} ${PACKAGE_VERSION} ${kernel_source_dir}"
+AUTOINSTALL="yes"
+
+BUILD_EXCLUSIVE_CONFIG="CONFIG_ARCH_QCOM"
+BUILD_EXCLUSIVE_KERNEL_MIN="6.16"
