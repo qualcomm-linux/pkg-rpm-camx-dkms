@@ -11,8 +11,8 @@
 %global camx_targets qcm6490 qcs9100 qcs615 x1e80100
 
 Name:           camx-dkms
-Version:        1.0.5
-Release:        2%{?dist}
+Version:        1.0.7
+Release:        1%{?dist}
 Summary:        Qualcomm CamX camera kernel driver (DKMS source)
 
 License:        GPL-2.0-only
@@ -185,6 +185,9 @@ exit 0
 %{_includedir}/camx/
 
 %changelog
+* Wed Oct 2026 Kripalsinh Rana <kripalsi@qti.qualcomm.com> - 1.0.7-1
+- Update CamX DKMS kernel driver sources to version 1.0.7
+
 * Wed Sep 23 2026 Gangabhavani Yenugula <gyenugul@qti.qualcomm.com> - 1.0.5-2
 - Extract the inline dkms-build/dkms-clean/dkms.conf heredocs into standalone
   camx-dkms.build, camx-dkms.clean and camx-dkms.dkms Source file
